@@ -58,6 +58,6 @@ python src/bilibili_dashboard.py
 如有问题，欢迎通过以下方式联系：
 
 - GitHub Issues: [提交Issue](https://github.com/yourusername/bilibili-dashboard/issues)
-- Email: your.email@example.com
+- Email: johnnwick@126.com
 
 再次感谢你的贡献！
