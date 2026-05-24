@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前线观察大队 // CYBERPUNK</title>
+    <style>
+        :root {
+            --bg-main: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --neon-yellow: #ffff00;
+            --neon-cyan: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff41;
+            --neon-red: #ff0040;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Consolas', 'Courier New', monospace;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 标题区 */
+        .header {
+            border-bottom: 2px solid var(--neon-yellow);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 28px;
+            color: var(--neon-yellow);
+            margin: 0;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--neon-cyan);
+            margin: 5px 0 0 0;
+        }
+
+        /* 粉丝卡片 */
+        .follower-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--neon-yellow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .follower-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .follower-label {
+            font-size: 18px;
+            color: var(--neon-yellow);
+        }
+
+        .follower-value {
+            font-size: 48px;
+            color: var(--neon-yellow);
+            font-weight: bold;
+            text-shadow: 0 0 20px var(--neon-yellow);
+        }
+
+        .follower-change {
+            font-size: 16px;
+            padding: 5px 15px;
+            background: var(--bg-card);
+        }
+
+        .change-up { color: var(--neon-green); border: 1px solid var(--neon-green); }
+        .change-down { color: var(--neon-red); border: 1px solid var(--neon-red); }
+        .change-neutral { color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
+
+        /* 按钮区 */
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 8px 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--neon-cyan);
+            color: var(--bg-main);
+        }
+
+        .btn-green { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-green:hover { background: var(--neon-green); color: var(--bg-main); }
+
+        .btn-pink { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .btn-pink:hover { background: var(--neon-pink); color: var(--bg-main); }
+
+        /* 消息区 */
+        .messages-header {
+            border-bottom: 1px solid var(--neon-cyan);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .messages-title {
+            font-size: 20px;
+            color: var(--neon-yellow);
+        }
+
+        .msg-card {
+            background: var(--bg-card);
+            border: 1px solid var(--neon-cyan);
+            margin-bottom: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .msg-card:hover {
+            border-color: var(--neon-yellow);
+            background: var(--bg-secondary);
+        }
+
+        .msg-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .msg-type {
+            font-size: 14px;
+        }
+
+        .type-reply { color: var(--neon-yellow); }
+        .type-mention { color: var(--neon-cyan); }
+
+        .msg-user {
+            font-size: 15px;
+            color: var(--neon-green);
+        }
+
+        .msg-time {
+            font-size: 12px;
+            color: var(--neon-pink);
+        }
+
+        .msg-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .msg-content {
+            background: var(--bg-secondary);
+            padding: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Cookie弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-main);
+            border: 2px solid var(--neon-yellow);
+            padding: 30px;
+            max-width: 500px;
+        }
+
+        .modal-title {
+            color: var(--neon-yellow);
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .modal-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-yellow);
+            padding: 10px;
+            width: 100%;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+        }
+
+        .modal-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* 状态 */
+        .status {
+            font-size: 14px;
+            color: var(--neon-pink);
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-yellow);
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            color: var(--neon-cyan);
+        }
+
+        /* 刷新间隔 */
+        .refresh-interval {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-info">
+            <img id="avatar" class="avatar" src="" alt="">
+            <div>
+                <span id="userName" class="user-name">>> 系统初始化中...</span>
+                <span id="userTitle" style="display:none; font-size:12px; color:var(--neon-pink); margin-left:10px;"></span>
+            </div>
+        </div>
+
+        <div class="follower-card">
+            <div class="follower-row">
+                <span class="follower-label">[FOLLOWERS]</span>
+                <span id="followerValue" class="follower-value">0</span>
+                <span id="followerChange" class="follower-change change-neutral">◆ 等待数据 ◆</span>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="refreshData()">⟳ SYNC</button>
+            <button class="btn btn-green" onclick="markBaseline()">⚡ MARK</button>
+            <button class="btn btn-pink" onclick="showCookieModal()">KEY</button>
+            <button class="btn" onclick="refreshMessages()">⟳ MSG</button>
+            <button class="btn btn-pink" onclick="showUserModal()">👤 设置</button>
+        </div>
+
+        <div id="soundStatus" style="font-size:12px; color:var(--neon-green); margin-bottom:5px;">
+            ◈ 声音提醒: 开启 | 新关注1声 / 新回复3声
+        </div>
+
+        <div id="status" class="status">◈ 系统初始化...</div>
+        <p class="refresh-interval">自动刷新: 60s (数据) / 120s (消息)</p>
+
+        <div class="messages-header">
+            <span class="messages-title">▶ INCOMING_TRANSMISSIONS ◀</span>
+        </div>
+
+        <div id="cookieWarning" style="display:none; color:var(--neon-red); margin-bottom:15px;">
+            [警告] 访问密钥未配置 - 点击 [KEY] 按钮
+        </div>
+
+        <div id="msgStatus" style="color:var(--neon-cyan); margin-bottom:10px;">
+            ◈ 系统等待中...
+        </div>
+
+        <div id="messages"></div>
+    </div>
+
+    <!-- Cookie弹窗 -->
+    <div id="cookieModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">[ 访问密钥配置 ]</div>
+            <p style="color:var(--neon-cyan); margin-bottom:10px;">>>> 请输入SESSDATA值 <<<</p>
+            <input type="text" id="cookieInput" class="modal-input" placeholder="SESSDATA...">
+            <p class="modal-hint">获取方法: F12 → Application → Cookies → bilibili.com → SESSDATA</p>
+            <div class="modal-buttons">
+                <button class="btn btn-green" onclick="saveCookie()">[ 写入系统 ]</button>
+                <button class="btn" onclick="window.open('https://www.bilibili.com')">[ 打开B站 ]</button>
+                <button class="btn btn-pink" onclick="closeCookieModal()">[ 取消 ]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户设置弹窗 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">[ 用户设置 ]</div>
+            <p style="color:var(--neon-cyan); margin-bottom:10px;">>>> 自定义显示名称和头像 <<<</p>
+
+            <label style="color:var(--neon-yellow); font-size:14px;">名称:</label>
+            <input type="text" id="userNameInput" class="modal-input" placeholder="输入名称..." style="margin-bottom:15px;">
+
+            <label style="color:var(--neon-yellow); font-size:14px;">头像:</label>
+            <input type="file" id="avatarFileInput" accept="image/*" style="margin-bottom:10px; color:var(--text-primary);">
+            <p class="modal-hint">选择本地图片文件（jpg/png）</p>
+
+            <label style="color:var(--neon-yellow); font-size:14px; margin-top:15px;">头衔:</label>
+            <input type="text" id="userTitleInput" class="modal-input" placeholder="输入头衔（可选）...">
+            <p class="modal-hint">如：知名UP主、个人认证等</p>
+
+            <div class="modal-buttons">
+                <button class="btn btn-green" onclick="saveUserSettings()">[ 保存 ]</button>
+                <button class="btn btn-pink" onclick="closeUserModal()">[ 取消 ]</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============== 声音提醒系统 ==============
+        let soundEnabled = true;
+        let prevFollower = 0;
+        let prevMsgIds = new Set();
+        let isFirstLoad = true;
+        let audioCtx = null;
+
+        // 初始化AudioContext
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // 播放蜂鸣声（频率800Hz，持续时间150ms）
+        function beep(count = 1) {
+            if (!soundEnabled) return;
+            initAudio();
+
+            const freq = 800;
+            const duration = 0.15;
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.frequency.value = freq;
+                    osc.type = 'square';
+
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + duration);
+                }, i * 200);
+            }
+        }
+
+        // 切换声音开关
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const statusEl = document.getElementById('soundStatus');
+            if (soundEnabled) {
+                statusEl.textContent = '◈ 声音提醒: 开启 | 新关注1声 / 新回复3声';
+                statusEl.style.color = 'var(--neon-green)';
+                initAudio();
+                beep(1);
+            } else {
+                statusEl.textContent = '◈ 声音提醒: 关闭';
+                statusEl.style.color = 'var(--neon-red)';
+            }
+        }
+
+        // ============== 用户设置 ==============
+
+        function showUserModal() {
+            document.getElementById('userModal').style.display = 'flex';
+            // 加载当前设置
+            loadUserSettings();
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        async function loadUserSettings() {
+            try {
+                const resp = await fetch('/api/user');
+                const data = await resp.json();
+                document.getElementById('userNameInput').value = data.name || '';
+                document.getElementById('userTitleInput').value = data.title || '';
+            } catch (e) {}
+        }
+
+        async function saveUserSettings() {
+            const name = document.getElementById('userNameInput').value.trim();
+            const title = document.getElementById('userTitleInput').value.trim();
+            const fileInput = document.getElementById('avatarFileInput');
+            const file = fileInput.files[0];
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('title', title);
+            if (file) formData.append('avatar', file);
+
+            try {
+                const resp = await fetch('/api/user', { method: 'POST', body: formData });
+                const data = await resp.json();
+                if (data.success) {
+                    alert('设置已保存');
+                    closeUserModal();
+                    updateUserDisplay(name, data.face, title);
+                } else { alert(data.error); }
+            } catch (e) { alert('保存失败'); }
+        }
+
+        function updateUserDisplay(name, face, title) {
+            document.getElementById('avatar').src = face || '';
+            document.getElementById('userName').textContent = `>> @${name || '未设置'}`;
+            const titleEl = document.getElementById('userTitle');
+            if (title) { titleEl.textContent = `[${title}]`; titleEl.style.display = 'inline'; }
+            else { titleEl.style.display = 'none'; }
+        }
+
+        // ============== 数据刷新 ==============
+
+        async function refreshData() {
+            document.getElementById('status').textContent = '◈ 正在同步数据...';
+            document.getElementById('status').style.color = 'var(--neon-yellow)';
+
+            // 先加载用户设置
+            try {
+                const userResp = await fetch('/api/user');
+                const userData = await userResp.json();
+                updateUserDisplay(userData.name, userData.face, userData.title);
+            } catch (e) {}
+
+            try {
+                const resp = await fetch('/api/data');
+                const data = await resp.json();
+
+                if (data.success) {
+                    // 检测新关注（粉丝数增加）
+                    if (!isFirstLoad && prevFollower > 0) {
+                        if (data.follower > prevFollower) {
+                            beep(1); // 新关注蜂鸣1声
+                        }
+                    }
+                    isFirstLoad = false;
+                    prevFollower = data.follower;
+
+                    document.getElementById('followerValue').textContent = data.follower;
+
+                    const changeEl = document.getElementById('followerChange');
+                    if (data.change > 0) {
+                        changeEl.textContent = `▲ +${data.change} NEW`;
+                        changeEl.className = 'follower-change change-up';
+                    } else if (data.change < 0) {
+                        changeEl.textContent = `▼ ${data.change}`;
+                        changeEl.className = 'follower-change change-down';
+                    } else {
+                        changeEl.textContent = '◆ 稳定 ◆';
+                        changeEl.className = 'follower-change change-neutral';
+                    }
+
+                    if (!data.cookie_set) {
+                        document.getElementById('cookieWarning').style.display = 'block';
+                    } else {
+                        document.getElementById('cookieWarning').style.display = 'none';
+                    }
+
+                    const now = new Date().toLocaleTimeString('zh-CN');
+                    document.getElementById('status').textContent = `◈ 同步完成 [${now}]`;
+                    document.getElementById('status').style.color = 'var(--neon-cyan)';
+                } else {
+                    document.getElementById('status').textContent = `[错误] ${data.error}`;
+                    document.getElementById('status').style.color = 'var(--neon-red)';
+                }
+            } catch (e) {
+                document.getElementById('status').textContent = `[错误] 网络请求失败`;
+                document.getElementById('status').style.color = 'var(--neon-red)';
+            }
+        }
+
+        async function refreshMessages() {
+            document.getElementById('msgStatus').textContent = '◈ 正在接收传输...';
+            document.getElementById('msgStatus').style.color = 'var(--neon-yellow)';
+
+            try {
+                const resp = await fetch('/api/messages');
+                const data = await resp.json();
+
+                if (data.success) {
+                    // 检测新消息
+                    const newMsgIds = new Set(data.messages.map(m => m.id).filter(id => id));
+                    if (!isFirstLoad && prevMsgIds.size > 0) {
+                        const addedIds = newMsgIds.size - prevMsgIds.size;
+                        // 找出新增的消息ID
+                        let newCount = 0;
+                        for (let id of newMsgIds) {
+                            if (!prevMsgIds.has(id)) newCount++;
+                        }
+                        if (newCount > 0) {
+                            beep(3); // 新回复蜂鸣3声
+                        }
+                    }
+                    prevMsgIds = newMsgIds;
+
+                    renderMessages(data.messages);
+                    document.getElementById('msgStatus').textContent = `◈ 共接收到 ${data.messages.length} 条传输`;
+                    document.getElementById('msgStatus').style.color = 'var(--neon-cyan)';
+                } else {
+                    document.getElementById('msgStatus').textContent = `[错误] ${data.error}`;
+                    document.getElementById('msgStatus').style.color = 'var(--neon-red)';
+                    document.getElementById('messages').innerHTML = '';
+                }
+            } catch (e) {
+                document.getElementById('msgStatus').textContent = `[错误] 网络请求失败`;
+                document.getElementById('msgStatus').style.color = 'var(--neon-red)';
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messages');
+
+            if (!messages.length) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:var(--text-secondary);">
+                        [ 信号静默 ]<br>暂无传入传输
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const typeClass = msg.type === 'reply' ? 'type-reply' : 'type-mention';
+                const typeText = msg.type === 'reply' ? '◆ REPLY' : '◆ MENTION';
+                const timeStr = msg.timestamp ? new Date(msg.timestamp * 1000).toLocaleString('zh-CN') : '';
+                const content = msg.reply_content || msg.content || '';
+                const link = msg.uri || (msg.bvid ? `https://www.bilibili.com/video/${msg.bvid}` : 'https://message.bilibili.com/#/reply');
+
+                return `
+                    <div class="msg-card" onclick="window.open('${link}')">
+                        <div class="msg-header">
+                            <div>
+                                <span class="msg-type ${typeClass}">${typeText}</span>
+                                <span class="msg-user">> ${msg.user_name}</span>
+                            </div>
+                            <span class="msg-time">[${timeStr}]</span>
+                        </div>
+                        ${msg.title ? `<div class="msg-title">@ ${msg.title}</div>` : ''}
+                        <div class="msg-content">>>> ${content}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function markBaseline() {
+            try {
+                const resp = await fetch('/api/mark');
+                const data = await resp.json();
+                if (data.success) {
+                    document.getElementById('status').textContent = '◈ 基线数据已标记';
+                    document.getElementById('status').style.color = 'var(--neon-green)';
+                    refreshData();
+                }
+            } catch (e) {}
+        }
+
+        function showCookieModal() {
+            document.getElementById('cookieModal').style.display = 'flex';
+        }
+
+        function closeCookieModal() {
+            document.getElementById('cookieModal').style.display = 'none';
+        }
+
+        async function saveCookie() {
+            const cookie = document.getElementById('cookieInput').value.trim();
+            if (!cookie || cookie.length < 20) {
+                alert('Cookie格式不正确');
+                return;
+            }
+
+            try {
+                const resp = await fetch('/api/cookie', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({cookie})
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    alert('访问密钥已写入系统');
+                    closeCookieModal();
+                    document.getElementById('cookieWarning').style.display = 'none';
+                    refreshMessages();
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert('写入失败');
+            }
+        }
+
+        // 初始化
+        refreshData();
+        refreshMessages();
+
+        // 自动刷新
+        setInterval(refreshData, 60000);
+        setInterval(refreshMessages, 120000);
+    </script>
+</body>
+</html>
