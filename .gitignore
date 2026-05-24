@@ -2,36 +2,42 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.so
 *.egg-info/
 .eggs/
 dist/
 build/
+*.manifest
+*.spec
 
-# 数据文件（敏感信息）
+# 用户数据（敏感信息）
 data/
 bilibili_*.json
 bilibili_*.txt
+*.log
 
-# Docker导出文件
+# Docker导出
 *.tar
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
+*.swo
 
 # 系统
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# 临时文件
-*.tmp
-*.log
-
-# 部署脚本（包含密码）
+# 部署脚本（含密码）
 deploy*.py
 update*.py
 write*.py
 check*.py
 test*.py
 restart*.py
+debug*.py
+
+# 安装包输出
+installer/

@@ -1,0 +1,2 @@
+This is a placeholder file.
+The actual data files will be created in user's AppData directory.
