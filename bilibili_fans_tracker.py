@@ -21,12 +21,13 @@ from pathlib import Path
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-# ============ 配置（与现有看板项目一致） ============
+# ============ 配置（与 web_app.py 路径一致） ============
 UID = "662899682"
 BASE_DIR = Path(__file__).parent
-COOKIE_FILE = BASE_DIR / "bilibili_cookie.txt"
-FANS_DIR = BASE_DIR / "data" / "fans"           # 粉丝快照: YYYY-MM-DD_HH.json
-UNFOLLOWERS_FILE = BASE_DIR / "data" / "unfollowers.json"  # 累计取关名单
+DATA_DIR = BASE_DIR / "data"
+COOKIE_FILE = DATA_DIR / "bilibili_cookie.txt" if (DATA_DIR / "bilibili_cookie.txt").exists() else BASE_DIR / "bilibili_cookie.txt"
+FANS_DIR = DATA_DIR / "fans"                     # 粉丝快照: YYYY-MM-DD_HH.json
+UNFOLLOWERS_FILE = DATA_DIR / "unfollowers.json" # 累计取关名单
 PAGE_SIZE = 50
 REQUEST_DELAY = 1.0
 MAX_RETRIES = 3
@@ -107,14 +108,21 @@ def get_all_fans(sessdata):
             break
 
         followers = data.get("list") or []
+
+        raw_total = data.get("total", 0)
+        total = raw_total.get("total", 0) if isinstance(raw_total, dict) else raw_total
+
         if not followers:
+            # B站API偶尔跳页返回空，如果还没拿够total就继续翻
+            if total and len(fans) < total and page < (total // PAGE_SIZE + 3):
+                print(f" 空页(跳过), 已获取 {len(fans)}/{total}")
+                page += 1
+                time.sleep(REQUEST_DELAY)
+                continue
             print(" ✅ (无更多数据)")
             break
 
         fans.extend(followers)
-
-        raw_total = data.get("total", 0)
-        total = raw_total.get("total", 0) if isinstance(raw_total, dict) else raw_total
 
         print(f" 已获取 {len(fans)}/{total}")
 

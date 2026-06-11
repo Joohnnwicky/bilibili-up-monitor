@@ -1,10 +1,9 @@
-# B站数据看板 - Web版 Docker镜像（含Playwright）
-
+# B站数据看板 - Web版 Docker镜像（含粉丝追踪器）
 FROM python:3.11-slim
 
 LABEL maintainer="前线观察大队"
 
-# 安装Playwright依赖
+# 安装系统依赖
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -24,18 +23,19 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装Python依赖
-RUN pip install --no-cache-dir flask requests playwright
-
-# 安装Playwright浏览器
-RUN playwright install chromium
+RUN pip install --no-cache-dir flask requests
 
 WORKDIR /app
 
-RUN mkdir -p /app/data /app/data/avatars
+# 创建数据目录
+RUN mkdir -p /app/data/avatars /app/data/fans /app/data/reports
 
+# 复制Web应用
 COPY web_app.py .
-COPY elec_fetcher.py .
 COPY templates templates
+
+# 复制粉丝追踪器
+COPY bilibili_fans_tracker.py .
 
 EXPOSE 5000
 
