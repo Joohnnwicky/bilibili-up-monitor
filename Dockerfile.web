@@ -1,26 +1,7 @@
-# B站数据看板 - Web版 Docker镜像（含粉丝追踪器）
+# B站数据看板 - Web版 Docker镜像
 FROM python:3.11-slim
 
 LABEL maintainer="前线观察大队"
-
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libasound2 \
-    && rm -rf /var/lib/apt/lists/*
 
 # 安装Python依赖
 RUN pip install --no-cache-dir flask requests
@@ -28,14 +9,11 @@ RUN pip install --no-cache-dir flask requests
 WORKDIR /app
 
 # 创建数据目录
-RUN mkdir -p /app/data/avatars /app/data/fans /app/data/reports
+RUN mkdir -p /app/data/avatars /app/data/reports
 
 # 复制Web应用
 COPY web_app.py .
 COPY templates templates
-
-# 复制粉丝追踪器
-COPY bilibili_fans_tracker.py .
 
 EXPOSE 5000
 

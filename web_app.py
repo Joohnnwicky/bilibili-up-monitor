@@ -10,8 +10,6 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 import requests
 import json
 import os
-import subprocess
-import threading
 from datetime import datetime
 
 app = Flask(__name__)
@@ -21,9 +19,7 @@ UID = "662899682"
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "bilibili_data.json")
 COOKIE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "bilibili_cookie.txt")
 USER_INFO_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "bilibili_user_info.json")
-FANS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "fans")
 REPORTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "reports")
-UNFOLLOWERS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "unfollowers.json")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -227,88 +223,6 @@ def mark_baseline():
     data["baseline"] = data.get("follower", 0)
     save_data(data)
     return jsonify({"success": True, "baseline": data["baseline"]})
-
-
-@app.route('/api/fans/snapshots')
-def fans_snapshots():
-    """获取所有粉丝快照列表"""
-    if not os.path.exists(FANS_DIR):
-        return jsonify({"success": True, "snapshots": []})
-    keys = sorted(
-        [f.replace('.json', '') for f in os.listdir(FANS_DIR) if f.endswith('.json')],
-        reverse=True
-    )
-    return jsonify({"success": True, "snapshots": keys})
-
-
-@app.route('/api/fans/unfollowers')
-def fans_unfollowers():
-    """获取累计取关名单"""
-    if not os.path.exists(UNFOLLOWERS_FILE):
-        return jsonify({"success": True, "list": [], "updated": ""})
-    try:
-        with open(UNFOLLOWERS_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return jsonify({"success": True, "list": data.get("list", []), "updated": data.get("updated", "")})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-
-@app.route('/api/fans/compare')
-def fans_compare():
-    """对比两个快照的粉丝变化"""
-    key1 = request.args.get("from")
-    key2 = request.args.get("to")
-    if not key1 or not key2:
-        if not os.path.exists(FANS_DIR):
-            return jsonify({"success": True, "unfollowers": [], "new_followers": [], "from": "", "to": ""})
-        keys = sorted([f.replace('.json', '') for f in os.listdir(FANS_DIR) if f.endswith('.json')])
-        if len(keys) < 2:
-            return jsonify({"success": True, "unfollowers": [], "new_followers": [], "from": keys[0] if keys else "", "to": keys[0] if keys else "", "message": "快照不足2个，无法对比"})
-        key1, key2 = keys[-2], keys[-1]
-
-    f1 = os.path.join(FANS_DIR, f"{key1}.json")
-    f2 = os.path.join(FANS_DIR, f"{key2}.json")
-    if not os.path.exists(f1) or not os.path.exists(f2):
-        return jsonify({"success": False, "error": "快照文件不存在"})
-
-    with open(f1, 'r', encoding='utf-8') as f:
-        prev = json.load(f)
-    with open(f2, 'r', encoding='utf-8') as f:
-        curr = json.load(f)
-
-    prev_mids = {fan["mid"]: fan["uname"] for fan in prev["fans"]}
-    curr_mids = {fan["mid"]: fan["uname"] for fan in curr["fans"]}
-
-    unfollowed = set(prev_mids.keys()) - set(curr_mids.keys())
-    new_followed = set(curr_mids.keys()) - set(prev_mids.keys())
-
-    return jsonify({
-        "success": True,
-        "from": key1,
-        "to": key2,
-        "from_count": prev["count"],
-        "to_count": curr["count"],
-        "unfollowers": [{"mid": mid, "uname": prev_mids[mid]} for mid in sorted(unfollowed)],
-        "new_followers": [{"mid": mid, "uname": curr_mids[mid]} for mid in sorted(new_followed)],
-    })
-
-
-@app.route('/api/fans/track', methods=['POST'])
-def fans_track_now():
-    """立即执行一次粉丝获取"""
-    def run_tracker():
-        try:
-            subprocess.run(
-                [os.sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "bilibili_fans_tracker.py")],
-                cwd=os.path.dirname(os.path.abspath(__file__)),
-                timeout=300,
-            )
-        except Exception as e:
-            print(f"粉丝追踪执行失败: {e}")
-
-    threading.Thread(target=run_tracker, daemon=True).start()
-    return jsonify({"success": True, "message": "粉丝获取已启动，请稍后刷新查看"})
 
 
 if __name__ == "__main__":
